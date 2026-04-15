@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code the Dog — XGO Robot Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#0e0e16;color:#e8e8f0;min-height:100vh}
+nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(14,14,22,0.95);border-bottom:1px solid #2a2a3a;display:flex;align-items:center;gap:4px;padding:0 16px;height:52px}
+.logo{font-weight:700;font-size:0.95rem;color:#ff6b35;margin-right:12px;white-space:nowrap}
+.tab{padding:6px 12px;border-radius:6px;border:none;background:transparent;color:#888;font-size:0.78rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.tab:hover{color:#e8e8f0;background:#1e1e2e}
+.tab.active{background:#ff6b35;color:#fff}
+.page{display:none;padding-top:68px;min-height:100vh}
+.page.active{display:block;animation:up .3s ease}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.wrap{max-width:780px;margin:0 auto;padding:32px 20px 80px}
+.tag{display:inline-block;background:#1e1e2e;border:1px solid #ff6b35;color:#ff6b35;font-size:0.65rem;padding:3px 8px;border-radius:5px;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;font-family:'Space Mono',monospace}
+h1{font-size:2.2rem;font-weight:700;line-height:1.1;letter-spacing:-1px;margin-bottom:12px}
+h2{font-size:1.5rem;font-weight:700;letter-spacing:-.5px;margin:28px 0 10px}
+h3{font-size:1rem;font-weight:700;margin:20px 0 6px}
+p{color:#aaa;line-height:1.75;margin-bottom:14px;font-size:0.95rem}
+p strong{color:#e8e8f0}
+.accent{color:#ff6b35}
+.blue{color:#00d4ff}
+.green{color:#a8ff3e}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:16px 0}
+.card{background:#161622;border:1px solid #2a2a3a;border-radius:10px;padding:16px;transition:border-color .2s}
+.card:hover{border-color:#ff6b35}
+.card .icon{font-size:1.4rem;margin-bottom:8px}
+.card h3{font-size:0.9rem;margin:0 0 5px}
+.card p{font-size:0.82rem;margin:0}
+.callout{background:#161622;border-left:3px solid #ff6b35;padding:12px 16px;margin:16px 0;border-radius:0 8px 8px 0}
+.callout.blue{border-left-color:#00d4ff}
+.callout.green{border-left-color:#a8ff3e}
+.callout strong{color:#e8e8f0;display:block;margin-bottom:4px;font-size:0.9rem}
+.callout p{margin:0;font-size:0.85rem}
+pre{background:#0a0a14;border:1px solid #2a2a3a;border-radius:10px;padding:16px;font-family:'Space Mono',monospace;font-size:0.78rem;line-height:1.9;overflow-x:auto;color:#c8d3f5;margin:14px 0}
+.kw{color:#ff6b35}.fn{color:#00d4ff}.cm{color:#444466}.st{color:#a8ff3e}.num{color:#ffc777}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.step-n{min-width:30px;height:30px;background:#ff6b35;border-radius:50%;display:grid;place-items:center;font-size:0.75rem;font-weight:700;flex-shrink:0}
+.step-b h3{margin:0 0 3px;font-size:0.95rem}
+.step-b p{margin:0;font-size:0.85rem}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:0.83rem}
+th{text-align:left;padding:8px 12px;background:#161622;color:#888;font-family:'Space Mono',monospace;font-size:0.65rem;text-transform:uppercase;border-bottom:1px solid #2a2a3a}
+td{padding:10px 12px;border-bottom:1px solid #1a1a2a;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.pill{font-family:'Space Mono',monospace;background:#161622;border:1px solid #2a2a3a;border-radius:4px;padding:2px 7px;font-size:0.74rem;color:#00d4ff;white-space:nowrap}
+.muted{color:#888}
+.pnav{display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:1px solid #2a2a3a}
+.pbtn{display:flex;align-items:center;gap:6px;padding:9px 18px;background:#161622;border:1px solid #2a2a3a;border-radius:8px;color:#e8e8f0;font-size:0.85rem;font-weight:700;cursor:pointer;transition:all .2s}
+.pbtn:hover{border-color:#ff6b35;color:#ff6b35}
+.pbtn.next{background:#ff6b35;border-color:#ff6b35;color:#fff}
+.pbtn.next:hover{background:#ff8855}
+.try-layout{display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start}
+@media(max-width:640px){.try-layout{grid-template-columns:1fr}}
+.challenge-btns{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.ch-btn{padding:6px 14px;background:#161622;border:1px solid #2a2a3a;border-radius:20px;color:#888;font-size:0.8rem;font-weight:700;cursor:pointer;transition:all .2s}
+.ch-btn:hover{border-color:#00d4ff;color:#e8e8f0}
+.ch-btn.active{background:#00d4ff;border-color:#00d4ff;color:#0a0a14}
+textarea{width:100%;min-height:240px;background:#0a0a14;color:#c8d3f5;font-family:'Space Mono',monospace;font-size:0.78rem;line-height:1.85;border:1px solid #2a2a3a;border-radius:10px 10px 0 0;padding:16px;resize:vertical;outline:none;tab-size:4}
+textarea:focus{border-color:#ff6b35}
+.check-bar{display:flex;gap:0}
+.check-btn{flex:1;padding:11px;background:#ff6b35;border:none;border-radius:0 0 0 10px;color:#fff;font-size:0.9rem;font-weight:700;cursor:pointer;transition:background .2s}
+.check-btn:hover{background:#ff8855}
+.clear-btn{padding:11px 20px;background:#161622;border:1px solid #2a2a3a;border-top:none;border-left:none;border-radius:0 0 10px 0;color:#888;font-size:0.85rem;cursor:pointer;transition:color .2s}
+.clear-btn:hover{color:#e8e8f0}
+.fb{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.fb-row{display:flex;gap:10px;padding:9px 12px;border-radius:7px;font-size:0.83rem;line-height:1.55}
+.fb-row.pass{background:rgba(168,255,62,.07);border:1px solid rgba(168,255,62,.2)}
+.fb-row.fail{background:rgba(255,107,53,.07);border:1px solid rgba(255,107,53,.2)}
+.fb-row.warn{background:rgba(255,199,119,.07);border:1px solid rgba(255,199,119,.2)}
+.fb-row strong{display:block;color:#e8e8f0}
+.fb-row span{color:#888}
+.dog-panel{background:#0a0a14;border:1px solid #2a2a3a;border-radius:12px;padding:16px;position:sticky;top:68px}
+.dog-title{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#888;font-family:'Space Mono',monospace;margin-bottom:12px;text-align:center}
+.dog-stage{width:100%;height:200px;background:#0e0e16;border-radius:8px;border:1px solid #1e1e2e;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.dog-status{font-size:0.72rem;color:#888;text-align:center;margin-top:8px;font-family:'Space Mono',monospace;min-height:1.2em}
+.action-log{margin-top:10px;background:#0e0e16;border-radius:6px;padding:8px 10px;font-family:'Space Mono',monospace;font-size:0.68rem;color:#555;max-height:80px;overflow-y:auto;line-height:1.6}
+.action-log .log-item{color:#a8ff3e}
+canvas#dogCanvas{width:100%;height:100%}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">CODE THE DOG 🐾</div>
+  <button class="tab active" onclick="go(0)">Intro</button>
+  <button class="tab" onclick="go(1)">Setup</button>
+  <button class="tab" onclick="go(2)">Python Basics</button>
+  <button class="tab" onclick="go(3)">Commands</button>
+  <button class="tab" onclick="go(4)">Try It</button>
+  <button class="tab" onclick="go(5)">Challenges</button>
+</nav>
+
+<!-- ====== PAGE 0: INTRO ====== -->
+<div class="page active" id="p0">
+<div class="wrap" style="display:grid;place-items:center;min-height:calc(100vh - 68px);text-align:center">
+  <div>
+    <div style="font-size:4rem;margin-bottom:20px;animation:bounce 2s ease-in-out infinite">🤖🐕</div>
+    <h1>You're about to<br><span class="accent">code a robot dog.</span></h1>
+    <p style="max-width:420px;margin:0 auto 28px">Use Python to control a real four-legged walking robot using micro:bit and MakeCode. This guide walks you through everything step by step.</p>
+    <button class="pbtn next" onclick="go(1)" style="margin:0 auto;display:inline-flex">Let's go →</button>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:36px">
+      <div class="card" style="cursor:pointer;min-width:130px" onclick="go(1)"><div class="icon">🛠️</div><h3>Setup</h3><p>Get connected</p></div>
+      <div class="card" style="cursor:pointer;min-width:130px" onclick="go(2)"><div class="icon">🐍</div><h3>Python Basics</h3><p>Learn the syntax</p></div>
+      <div class="card" style="cursor:pointer;min-width:130px" onclick="go(3)"><div class="icon">📋</div><h3>Commands</h3><p>What the dog can do</p></div>
+      <div class="card" style="cursor:pointer;min-width:130px" onclick="go(4)"><div class="icon">✍️</div><h3>Try It</h3><p>Write + test code</p></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ====== PAGE 1: SETUP ====== -->
+<div class="page" id="p1">
+<div class="wrap">
+  <div class="tag">Step 01</div>
+  <h1>Getting <span class="accent">Ready</span></h1>
+  <p>Before you write any code, you need to connect everything and open the right tool. Follow these steps in order.</p>
+
+  <div style="margin:24px 0">
+    <div class="step"><div class="step-n">1</div><div class="step-b"><h3>Lay the dog flat first</h3><p>Before turning anything on, put the XGO in the <strong>prone position</strong> — lying flat on its belly. If you power it on while it's upright, the joints can jam. Belly first, always.</p></div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-b"><h3>Plug the micro:bit into your computer</h3><p>Use the USB cable. It shows up on your computer like a USB drive.</p></div></div>
+    <div class="step"><div class="step-n">3</div><div class="step-b"><h3>Go to makecode.microbit.org</h3><p>Click <strong>New Project</strong>, name it (like "XGO Dog"), and click Create.</p></div></div>
+    <div class="step"><div class="step-n">4</div><div class="step-b"><h3>Load the XGO extension</h3><p>Click <strong>Extensions</strong> in the toolbox. Search for <strong>XGO</strong> and select it. This gives MakeCode all the dog commands.</p></div></div>
+    <div class="step"><div class="step-n">5</div><div class="step-b"><h3>Switch to Python mode</h3><p>At the top of MakeCode, click <strong>Python</strong> (not Blocks, not JavaScript). That's where you'll work.</p></div></div>
+  </div>
+
+  <div class="callout" style="border-left-color:#ff4466">
+    <strong>⚠️ Two things that trip everyone up</strong>
+    <p><strong>1.</strong> The Ring:bit board (where the micro:bit plugs into the dog) has its own power switch — make sure it's ON.<br>
+    <strong>2.</strong> After you download your code, drag the .hex file onto the micro:bit. The light will flash while it loads — wait for it to finish before testing.</p>
+  </div>
+
+  <div class="pnav">
+    <button class="pbtn" onclick="go(0)">← Back</button>
+    <button class="pbtn next" onclick="go(2)">Python Basics →</button>
+  </div>
+</div>
+</div>
+
+<!-- ====== PAGE 2: PYTHON BASICS ====== -->
+<div class="page" id="p2">
+<div class="wrap">
+  <div class="tag">Step 02</div>
+  <h1><span class="accent">Python</span> Basics</h1>
+  <p>Never written Python before? Here's everything you actually need for this project — no fluff.</p>
+
+  <h2>1. Comments — notes for humans</h2>
+  <p>A <strong>comment</strong> starts with <code style="font-family:'Space Mono',monospace;color:#00d4ff">#</code>. Python ignores that whole line. Use them to explain what your code does.</p>
+  <pre><span class="cm"># This is a comment — Python ignores it</span>
+<span class="fn">xgo</span>.<span class="fn">execution_action</span>(<span class="fn">xgo</span>.<span class="fn">action_enum</span>.<span class="fn">Sit_down</span>)  <span class="cm"># ← this makes the dog sit</span></pre>
+
+  <h2>2. Functions — name a block of code</h2>
+  <p>Use <code style="font-family:'Space Mono',monospace;color:#00d4ff">def</code> to create a function. Everything <strong>indented</strong> inside it runs when you call it. The colon at the end of <code style="font-family:'Space Mono',monospace;color:#00d4ff">def myfunction():</code> is required.</p>
+  <pre><span class="kw">def</span> <span class="fn">do_a_trick</span>():          <span class="cm"># define the function</span>
+    <span class="fn">xgo</span>.<span class="fn">execution_action</span>(<span class="fn">xgo</span>.<span class="fn">action_enum</span>.<span class="fn">Wave</span>)  <span class="cm"># indented = inside</span>
+    <span class="fn">xgo</span>.<span class="fn">execution_action</span>(<span class="fn">xgo</span>.<span class="fn">action_enum</span>.<span class="fn">Sit_down</span>)
+
+<span class="fn">do_a_trick</span>()               <span class="cm"># call it (actually runs it)</span></pre>
+
+  <div class="card-grid">
+    <div class="card"><div class="icon">🔑</div><h3>The colon :</h3><p>Every <code style="font-family:'Space Mono',monospace;color:#00d4ff">def</code> line ends with <code style="font-family:'Space Mono',monospace;color:#00d4ff">:</code>. Forget it and Python breaks.</p></div>
+    <div class="card"><div class="icon">→</div><h3>Indentation</h3><p>Everything inside a function must be indented (4 spaces or Tab). Python uses this instead of curly braces.</p></div>
+    <div class="card"><div class="icon">📞</div><h3>Calling vs. defining</h3><p>Writing <code style="font-family:'Space Mono',monospace;color:#00d4ff">def</code> just creates the function. Adding <code style="font-family:'Space Mono',monospace;color:#00d4ff">()</code> at the end is what actually runs it.</p></div>
+  </div>
+
+  <h2>3. Dot notation — how you talk to the dog</h2>
+  <p>The dot <code style="font-family:'Space Mono',monospace;color:#00d4ff">.</code> means "look inside this thing and use this tool." Think of <code style="font-family:'Space Mono',monospace;color:#00d4ff">xgo</code> as the dog's remote control.</p>
+  <pre><span class="fn">xgo</span>.<span class="fn">execution_action</span>(<span class="fn">xgo</span>.<span class="fn">action_enum</span>.<span class="fn">Sit_down</span>)
+<span class="cm"># xgo = remote | execution_action = the button | Sit_down = which action</span></pre>
+
+  <h2>4. The program structure — always the same pattern</h2>
+  <pre><span class="cm"># 1. Initialize the dog (ALWAYS FIRST)</span>
+<span class="fn">xgo</span>.<span class="fn">init_xgo_serial</span>(<span class="fn">SerialPin</span>.<span class="fn">P1</span>, <span class="fn">SerialPin</span>.<span class="fn">P2</span>)
+<span class="fn">xgo</span>.<span class="fn">execution_action</span>(<span class="fn">xgo</span>.<span class="fn">action_enum</span>.<span class="fn">Default_posture</span>)
+
+<span class="cm"># 2. Define your functions</span>
+<span class="kw">def</span> <span class="fn">on_button_a</span>():
+    <span class="fn">xgo</span>.<span class="fn">execution_action</span>(<span class="fn">xgo</span>.<span class="fn">action_enum</span>.<span class="fn">Wave</span>)
+
+<span class="cm"># 3. Connect functions to buttons</span>
+<span class="fn">input</span>.<span class="fn">on_button_pressed</span>(<span class="fn">Button</span>.<span class="fn">A</span>, <span class="fn">on_button_a</span>)</pre>
+
+  <div class="callout">
+    <strong>Common mistakes</strong>
+    <p>
+      <strong style="color:#ff6b35">Wrong indentation</strong> — Python will throw an IndentationError. Always use 4 spaces or Tab.<br>
+      <strong style="color:#ff6b35">Missing the colon</strong> — every <code style="font-family:'Space Mono',monospace;color:#00d4ff">def</code> line needs <code style="font-family:'Space Mono',monospace;color:#00d4ff">:</code> at the end.<br>
+      <strong style="color:#ff6b35">Wrong capitalization</strong> — <code style="font-family:'Space Mono',monospace;color:#00d4ff">Sit_down</code> and <code style="font-family:'Space Mono',monospace;color:#00d4ff">sit_down</code> are different. Check your caps.
+    </p>
+  </div>
+
+  <div class="pnav">
+    <button class="pbtn" onclick="go(1)">← Setup</button>
+    <button class="pbtn next" onclick="go(3)">Commands →</button>
+  </div>
+</div>
+</div>
+
+<!-- ====== PAGE 3: COMMANDS ====== -->
+<div class="page" id="p3">
+<div class="wrap">
+  <div class="tag">Step 03</div>
+  <h1>What the Dog Can <span class="accent">Do</span></h1>
+  <p>Every program starts with the two setup lines. After that, mix and match any commands below.</p>
+
+  <h2>Always goes first</h2>
+  <pre><span class="fn">xgo</span>.<span class="fn">init_xgo_serial</span>(<span class="fn">SerialPin</span>.<span class="fn">P1</span>, <span class="fn">SerialPin</span>.<span class="fn">P2</span>)
+<span class="fn">xgo</span>.<span class="fn">execution_action</span>(<span class="fn">xgo</span>.<span class="fn">action_enum</span>.<span class="fn">Default_posture</span>)</pre>
+
+  <h2>Actions</h2>
+  <p style="margin-bottom:6px">Use: <code style="font-family:'Space Mono',monospace;color:#00d4ff;background:#161622;padding:2px 6px;border-radius:4px">xgo.execution_action(xgo.action_enum.NAME)</code></p>
+  <table>
+    <tr><th>Name</th><th>What happens</th></tr>
+    <tr><td><span class="pill">Default_posture</span></td><td class="muted">Stand up straight — use at start and to reset</td></tr>
+    <tr><td><span class="pill">Sit_down</span></td><td class="muted">Dog sits</td></tr>
+    <tr><td><span class="pill">Wave</span></td><td class="muted">Raises and waves one front leg</td></tr>
+    <tr><td><span class="pill">Shake_hands</span></td><td class="muted">Extends a paw forward</td></tr>
+    <tr><td><span class="pill">Dance</span></td><td class="muted">Built-in dance routine</td></tr>
+    <tr><td><span class="pill">Mark_time</span></td><td class="muted">Marches in place</td></tr>
+    <tr><td><span class="pill">Pee</span></td><td class="muted">Lifts one back leg 😂</td></tr>
+    <tr><td><span class="pill">Stretch</span></td><td class="muted">Stretches front legs forward</td></tr>
+  </table>
+
+  <h2>Movement</h2>
+  <p style="margin-bottom:6px">Use: <code style="font-family:'Space Mono',monospace;color:#00d4ff;background:#161622;padding:2px 6px;border-radius:4px">xgo.move_xgo(xgo.direction_enum.DIRECTION, speed)</code></p>
+  <p>Speed: <strong>0</strong> = stopped, <strong>100</strong> = full speed. Start around <strong>40–60</strong>.</p>
+  <table>
+    <tr><th>Direction</th><th>What happens</th></tr>
+    <tr><td><span class="pill">Forward</span></td><td class="muted">Walk forward</td></tr>
+    <tr><td><span class="pill">Backward</span></td><td class="muted">Walk backward</td></tr>
+    <tr><td><span class="pill">Turn_left</span></td><td class="muted">Rotate left on the spot</td></tr>
+    <tr><td><span class="pill">Turn_right</span></td><td class="muted">Rotate right on the spot</td></tr>
+    <tr><td><span class="pill">Left</span></td><td class="muted">Crab-walk left</td></tr>
+    <tr><td><span class="pill">Right</span></td><td class="muted">Crab-walk right</td></tr>
+  </table>
+
+  <h2>Timing and loops</h2>
+  <table>
+    <tr><th>Command</th><th>What it does</th></tr>
+    <tr><td><span class="pill">basic.pause(ms)</span></td><td class="muted">Wait before the next line. 1000 = 1 second, 500 = half second</td></tr>
+    <tr><td><span class="pill">basic.forever(fn)</span></td><td class="muted">Runs your function over and over forever</td></tr>
+  </table>
+
+  <h2>Buttons</h2>
+  <p style="margin-bottom:6px">Use: <code style="font-family:'Space Mono',monospace;color:#00d4ff;background:#161622;padding:2px 6px;border-radius:4px">input.on_button_pressed(Button.X, function_name)</code></p>
+  <table>
+    <tr><th>Button</th><th>What it listens for</th></tr>
+    <tr><td><span class="pill">Button.A</span></td><td class="muted">Left button on the micro:bit</td></tr>
+    <tr><td><span class="pill">Button.B</span></td><td class="muted">Right button on the micro:bit</td></tr>
+    <tr><td><span class="pill">Button.AB</span></td><td class="muted">Both pressed at the same time</td></tr>
+  </table>
+
+  <div class="pnav">
+    <button class="pbtn" onclick="go(2)">← Python Basics</button>
+    <button class="pbtn next" onclick="go(4)">Try It →</button>
+  </div>
+</div>
+</div>
+
+<!-- ====== PAGE 4: TRY IT ====== -->
+<div class="page" id="p4">
+<div class="wrap">
+  <div class="tag">Step 04</div>
+  <h1>Write It <span class="accent">Yourself</span></h1>
+  <p>Pick a challenge, write your Python below, then hit <strong>Check + Run</strong>. The virtual dog on the right will actually do the moves your code calls.</p>
+
+  <div class="challenge-btns">
+    <button class="ch-btn active" onclick="loadCh(0)">Challenge 1</button>
+    <button class="ch-btn" onclick="loadCh(1)">Challenge 2</button>
+    <button class="ch-btn" onclick="loadCh(2)">Challenge 3</button>
+  </div>
+
+  <div class="callout blue" id="ch-prompt">
+    <strong id="ch-title">🐾 Challenge 1: Wake Up!</strong>
+    <p id="ch-desc">Make the dog stand up, sit down, then wave — in that order when the program starts. No buttons needed.</p>
+    <p style="margin-top:8px"><strong>Commands you'll need:</strong> <code style="font-family:'Space Mono',monospace;color:#00d4ff;font-size:0.78rem" id="ch-hints">init_xgo_serial · Default_posture · Sit_down · Wave · basic.pause()</code></p>
+  </div>
+
+  <div class="try-layout">
+    <div>
+      <textarea id="editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="# Start typing your Python here...
+# The two setup lines always go first!"></textarea>
+      <div class="check-bar">
+        <button class="check-btn" onclick="checkAndRun()">✓ Check + Run Dog</button>
+        <button class="clear-btn" onclick="clearEd()">Clear</button>
+      </div>
+      <div class="fb" id="fb-area"></div>
+    </div>
+
+    <div class="dog-panel">
+      <div class="dog-title">Virtual XGO Dog</div>
+      <div class="dog-stage">
+        <canvas id="dogCanvas" width="220" height="180"></canvas>
+      </div>
+      <div class="dog-status" id="dog-status">Idle — write code and click Check + Run</div>
+      <div class="action-log" id="action-log">
+        <span style="color:#444">Actions will appear here...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pnav" style="margin-top:20px">
+    <button class="pbtn" onclick="go(3)">← Commands</button>
+    <button class="pbtn next" onclick="go(5)">Challenges →</button>
+  </div>
+</div>
+</div>
+
+<!-- ====== PAGE 5: CHALLENGES ====== -->
+<div class="page" id="p5">
+<div class="wrap">
+  <div class="tag">Step 05</div>
+  <h1>Ready to <span class="accent">Level Up?</span></h1>
+  <p>Try these in order. Each one builds on what you learned. Don't peek at the Try It page unless you're really stuck.</p>
+
+  <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+
+    <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+      <div style="background:#ff6b35;color:white;padding:5px 10px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;flex-shrink:0">EASY</div>
+      <div><h3 style="margin:0 0 4px">1. The Happy Dog</h3><p style="margin:0;font-size:0.85rem">Button A → wave. Button B → sit. Start in Default_posture. Use functions and on_button_pressed.</p></div>
+    </div>
+
+    <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+      <div style="background:#ff6b35;color:white;padding:5px 10px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;flex-shrink:0">EASY</div>
+      <div><h3 style="margin:0 0 4px">2. The Trick Routine</h3><p style="margin:0;font-size:0.85rem">When the program starts: stand → sit → pause 2 sec → wave → pause 1 sec → stand. Use basic.pause() between each move.</p></div>
+    </div>
+
+    <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+      <div style="background:#a855f7;color:white;padding:5px 10px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;flex-shrink:0">MEDIUM</div>
+      <div><h3 style="margin:0 0 4px">3. The Loop Dog</h3><p style="margin:0;font-size:0.85rem">Make the dog repeat a 3-action routine forever using basic.forever(). Add pauses between each action so it looks natural.</p></div>
+    </div>
+
+    <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+      <div style="background:#a855f7;color:white;padding:5px 10px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;flex-shrink:0">MEDIUM</div>
+      <div><h3 style="margin:0 0 4px">4. Walk a Square</h3><p style="margin:0;font-size:0.85rem">Forward → turn right → repeat 4 times. Experiment with timing using move_xgo() and pause() to make it actually square.</p></div>
+    </div>
+
+    <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+      <div style="background:#ff4466;color:white;padding:5px 10px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;flex-shrink:0">HARD</div>
+      <div><h3 style="margin:0 0 4px">5. Full Trick Show</h3><p style="margin:0;font-size:0.85rem">Button A = 3 tricks in a row. Button B = walk forward 3 seconds then stop. A+B = do something creative. Use functions, pauses, movement, and actions all together.</p></div>
+    </div>
+
+    <div class="callout green" style="margin-top:8px">
+      <strong>Bonus: Make it your own</strong>
+      <p>Create something that doesn't exist in any of these challenges. Name it. Be weird. The best code comes from people who go off-script.</p>
+    </div>
+  </div>
+
+  <div class="pnav">
+    <button class="pbtn" onclick="go(4)">← Try It</button>
+    <button class="pbtn next" onclick="go(0)">Start Over →</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ---- NAV ----
+let cur = 0;
+const pages = document.querySelectorAll('.page');
+const tabs = document.querySelectorAll('.tab');
+function go(n) {
+  pages[cur].classList.remove('active');
+  tabs[cur].classList.remove('active');
+  cur = n;
+  pages[n].classList.add('active');
+  tabs[n].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ---- TAB KEY IN EDITOR ----
+document.getElementById('editor').addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = e.target, st = s.selectionStart, en = s.selectionEnd;
+    s.value = s.value.substring(0, st) + '    ' + s.value.substring(en);
+    s.selectionStart = s.selectionEnd = st + 4;
+  }
+});
+
+// ---- CHALLENGES ----
+const challenges = [
+  {
+    title: '🐾 Challenge 1: Wake Up!',
+    desc: 'Make the dog stand up, sit down, then wave — in that order when the program starts. No buttons needed.',
+    hints: 'init_xgo_serial · Default_posture · Sit_down · Wave · basic.pause()',
+    checks: [
+      { label: 'Set up serial connection', test: c => c.includes('init_xgo_serial') && c.includes('SerialPin.P1'), pass: 'init_xgo_serial is there — good start.', fail: 'Missing xgo.init_xgo_serial(SerialPin.P1, SerialPin.P2) — must be the very first line.' },
+      { label: 'Start in Default_posture', test: c => c.includes('Default_posture'), pass: 'Default_posture found — dog starts standing.', fail: 'Add xgo.execution_action(xgo.action_enum.Default_posture) after init.' },
+      { label: 'Make the dog sit', test: c => c.includes('Sit_down'), pass: 'Sit_down is there.', fail: 'Add xgo.execution_action(xgo.action_enum.Sit_down).' },
+      { label: 'Make the dog wave', test: c => c.includes('Wave'), pass: 'Wave action found!', fail: 'Add xgo.execution_action(xgo.action_enum.Wave).' },
+      { label: 'Use pauses between actions', warn: true, test: c => c.includes('basic.pause('), pass: 'Pauses found — moves will have time to complete.', fail: 'Try adding basic.pause(1500) between actions so each move finishes before the next starts.' },
+      { label: 'No buttons (runs automatically)', test: c => !c.includes('on_button_pressed'), pass: 'No buttons needed — code runs on startup.', fail: 'This challenge should run automatically. Remove on_button_pressed.' },
+    ]
+  },
+  {
+    title: '🔘 Challenge 2: Button Dog',
+    desc: 'Button A → sit. Button B → shake hands. Both together (A+B) → dance. Start in Default_posture.',
+    hints: 'init_xgo_serial · Default_posture · Sit_down · Shake_hands · Dance · on_button_pressed · Button.A · Button.B · Button.AB · def',
+    checks: [
+      { label: 'Set up serial connection', test: c => c.includes('init_xgo_serial') && c.includes('SerialPin.P1'), pass: 'init_xgo_serial is set up correctly.', fail: 'Missing xgo.init_xgo_serial(SerialPin.P1, SerialPin.P2).' },
+      { label: 'Start in Default_posture', test: c => c.includes('Default_posture'), pass: 'Default_posture is there.', fail: 'Add xgo.execution_action(xgo.action_enum.Default_posture) right after init.' },
+      { label: 'Button A → Sit', test: c => c.includes('Button.A') && c.includes('Sit_down'), pass: 'Button A connected to Sit_down.', fail: 'Connect Button.A to a function that calls xgo.execution_action(xgo.action_enum.Sit_down).' },
+      { label: 'Button B → Shake hands', test: c => c.includes('Button.B') && c.includes('Shake_hands'), pass: 'Button B triggers Shake_hands.', fail: 'Connect Button.B to a function that calls xgo.execution_action(xgo.action_enum.Shake_hands).' },
+      { label: 'A+B → Dance', test: c => c.includes('Button.AB') && c.includes('Dance'), pass: 'A+B triggers Dance!', fail: 'Add a function for Button.AB that calls xgo.execution_action(xgo.action_enum.Dance).' },
+      { label: 'Functions defined with def', test: c => (c.match(/def /g) || []).length >= 2, pass: 'Multiple functions found — good structure.', fail: 'Each button needs its own function defined with def myfunction(): then the action indented inside.' },
+    ]
+  },
+  {
+    title: '🔁 Challenge 3: Forever Loop',
+    desc: 'Make the dog repeat forever: stand up → wait 1 sec → sit → wait 1 sec → repeat. Use basic.forever() with a function.',
+    hints: 'init_xgo_serial · Default_posture · Sit_down · basic.pause() · basic.forever() · def',
+    checks: [
+      { label: 'Set up serial connection', test: c => c.includes('init_xgo_serial'), pass: 'init_xgo_serial is there.', fail: 'Missing xgo.init_xgo_serial(SerialPin.P1, SerialPin.P2).' },
+      { label: 'A function defined with def', test: c => c.includes('def ') && c.includes('():'), pass: 'Function is defined — good structure.', fail: 'Define a function using def myfunction(): then put the loop actions inside (indented).' },
+      { label: 'Default_posture inside the loop', test: c => c.includes('Default_posture'), pass: 'Default_posture is in the loop.', fail: 'Add xgo.execution_action(xgo.action_enum.Default_posture) inside your loop function.' },
+      { label: 'Sit_down inside the loop', test: c => c.includes('Sit_down'), pass: 'Sit_down is in the loop.', fail: 'Add xgo.execution_action(xgo.action_enum.Sit_down) inside your loop function.' },
+      { label: 'Pauses between actions', test: c => (c.match(/basic\.pause\(/g) || []).length >= 2, pass: 'Two or more pauses found — timing should work well.', fail: 'Add basic.pause(1000) between each action so the dog has time to finish each move.' },
+      { label: 'basic.forever() used', test: c => c.includes('basic.forever('), pass: 'basic.forever() is there — the routine will loop!', fail: 'Call basic.forever(your_function_name) at the end of your program to make it repeat.' },
+    ]
+  }
+];
+
+let curCh = 0;
+function loadCh(n) {
+  curCh = n;
+  const ch = challenges[n];
+  document.getElementById('ch-title').textContent = ch.title;
+  document.getElementById('ch-desc').textContent = ch.desc;
+  document.getElementById('ch-hints').textContent = ch.hints;
+  document.getElementById('fb-area').innerHTML = '';
+  document.getElementById('editor').value = '';
+  document.querySelectorAll('.ch-btn').forEach((b, i) => b.classList.toggle('active', i === n));
+  resetDog();
+}
+
+function clearEd() {
+  document.getElementById('editor').value = '';
+  document.getElementById('fb-area').innerHTML = '';
+  resetDog();
+}
+
+function checkAndRun() {
+  const raw = document.getElementById('editor').value;
+  const code = raw.replace(/\s+/g, ' ').trim();
+  const ch = challenges[curCh];
+  let html = '';
+
+  ch.checks.forEach(ck => {
+    const ok = ck.test(code);
+    const cls = ok ? 'pass' : (ck.warn ? 'warn' : 'fail');
+    const icon = ok ? '✅' : (ck.warn ? '💡' : '❌');
+    const msg = ok ? ck.pass : ck.fail;
+    html += `<div class="fb-row ${cls}"><span>${icon}</span><div><strong>${ck.label}</strong><span>${msg}</span></div></div>`;
+  });
+
+  document.getElementById('fb-area').innerHTML = html;
+  runDogFromCode(code);
+}
+
+// ---- VIRTUAL DOG ----
+const canvas = document.getElementById('dogCanvas');
+const ctx = canvas.getContext('2d');
+let dogQueue = [];
+let dogRunning = false;
+let animFrame = null;
+let legPhase = 0;
+
+function resetDog() {
+  dogRunning = false;
+  dogQueue = [];
+  cancelAnimationFrame(animFrame);
+  document.getElementById('dog-status').textContent = 'Idle — write code and click Check + Run';
+  document.getElementById('action-log').innerHTML = '<span style="color:#444">Actions will appear here...</span>';
+  legPhase = 0;
+  drawDog('stand', 0);
+}
+
+function runDogFromCode(code) {
+  const actions = [];
+  if (code.includes('Default_posture')) actions.push({ name: 'stand', label: 'Default_posture' });
+  if (code.includes('Sit_down')) actions.push({ name: 'sit', label: 'Sit_down' });
+  if (code.includes('Wave')) actions.push({ name: 'wave', label: 'Wave' });
+  if (code.includes('Shake_hands')) actions.push({ name: 'shake', label: 'Shake_hands' });
+  if (code.includes('Dance')) actions.push({ name: 'dance', label: 'Dance' });
+  if (code.includes('Mark_time')) actions.push({ name: 'march', label: 'Mark_time' });
+  if (code.includes('Pee')) actions.push({ name: 'pee', label: 'Pee' });
+  if (code.includes('Stretch')) actions.push({ name: 'stretch', label: 'Stretch' });
+  if (code.includes('direction_enum.Forward')) actions.push({ name: 'walk', label: 'Move Forward' });
+  if (code.includes('direction_enum.Turn_left')) actions.push({ name: 'turnleft', label: 'Turn Left' });
+  if (code.includes('direction_enum.Turn_right')) actions.push({ name: 'turnright', label: 'Turn Right' });
+
+  if (actions.length === 0) {
+    document.getElementById('dog-status').textContent = 'No actions found — add some commands!';
+    drawDog('stand', 0);
+    return;
+  }
+
+  const log = document.getElementById('action-log');
+  log.innerHTML = actions.map(a => `<div class="log-item">&gt; ${a.label}</div>`).join('');
+
+  cancelAnimationFrame(animFrame);
+  dogRunning = true;
+  dogQueue = [...actions];
+  runNextAction();
+}
+
+function runNextAction() {
+  if (!dogRunning || dogQueue.length === 0) {
+    dogRunning = false;
+    document.getElementById('dog-status').textContent = 'Done! ✓';
+    return;
+  }
+  const act = dogQueue.shift();
+  document.getElementById('dog-status').textContent = act.label + '...';
+  animateDogAction(act.name, () => setTimeout(runNextAction, 300));
+}
+
+function animateDogAction(action, onDone) {
+  let frames = 0;
+  const duration = action === 'dance' ? 80 : action === 'march' ? 60 : action === 'walk' ? 60 : 40;
+  function frame() {
+    frames++;
+    legPhase += 0.18;
+    drawDog(action, frames / duration);
+    if (frames < duration) {
+      animFrame = requestAnimationFrame(frame);
+    } else {
+      onDone && onDone();
+    }
+  }
+  animFrame = requestAnimationFrame(frame);
+}
+
+function drawDog(action, t) {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.fillStyle = '#1a1a2a';
+  ctx.fillRect(0, H - 24, W, 24);
+  ctx.fillStyle = '#222235';
+  ctx.fillRect(0, H - 24, W, 2);
+
+  ctx.strokeStyle = '#2a2a40';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 20) {
+    ctx.beginPath(); ctx.moveTo(x, H - 24); ctx.lineTo(x, H); ctx.stroke();
+  }
+
+  const cx = W / 2, groundY = H - 24;
+  const wave = Math.sin(legPhase);
+  const wave2 = Math.sin(legPhase * 2);
+
+  let bodyY = groundY - 55;
+  let bodyTilt = 0, tailWag = 0, frontLegExtend = 0, backLegExtend = 0;
+  let bodyBob = 0, xOffset = 0, sitAmt = 0;
+
+  if (action === 'sit') {
+    sitAmt = Math.min(1, t * 3);
+    bodyY = groundY - 55 + sitAmt * 16;
+    bodyTilt = sitAmt * 8 * Math.PI / 180;
+  } else if (action === 'wave') {
+    bodyBob = wave * 3; tailWag = wave * 0.5;
+    frontLegExtend = Math.max(0, Math.sin(legPhase)) * 22;
+  } else if (action === 'shake') {
+    bodyBob = wave * 2;
+    frontLegExtend = Math.max(0, Math.cos(legPhase)) * 18;
+  } else if (action === 'dance') {
+    bodyBob = wave * 7; bodyTilt = wave2 * 12 * Math.PI / 180;
+    tailWag = wave * 0.8; xOffset = wave2 * 6;
+  } else if (action === 'march') {
+    bodyBob = Math.abs(wave) * 3;
+    frontLegExtend = Math.max(0, wave) * 12;
+    backLegExtend = Math.max(0, -wave) * 12;
+  } else if (action === 'walk') {
+    xOffset = wave2 * 4; bodyBob = Math.abs(wave2) * 4;
+    frontLegExtend = Math.max(0, wave) * 16;
+    backLegExtend = Math.max(0, -wave) * 16;
+  } else if (action === 'turnleft' || action === 'turnright') {
+    bodyTilt = (action === 'turnleft' ? -1 : 1) * wave * 10 * Math.PI / 180;
+    bodyBob = Math.abs(wave) * 3;
+  } else if (action === 'pee') {
+    bodyBob = wave * 2;
+    backLegExtend = Math.max(0, Math.sin(legPhase + 1)) * 20;
+    bodyTilt = 8 * Math.PI / 180;
+  } else if (action === 'stretch') {
+    bodyTilt = -10 * Math.PI / 180; frontLegExtend = -14; bodyY = groundY - 50;
+  } else {
+    bodyBob = wave * 1.5; tailWag = wave * 0.3;
+  }
+
+  bodyY += bodyBob;
+
+  ctx.save();
+  ctx.translate(cx + xOffset, bodyY);
+  ctx.rotate(bodyTilt);
+
+  // Shadow
+  ctx.save();
+  ctx.translate(0, 55 + 16); ctx.scale(1, 0.25);
+  ctx.beginPath(); ctx.arc(0, 0, 32, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
+  ctx.restore();
+
+  // Body
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(-30, -12, 60, 24, 10);
+  else { ctx.rect(-30, -12, 60, 24); }
+  ctx.fillStyle = '#2a4a8a'; ctx.fill();
+  ctx.strokeStyle = '#3a5aaa'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  // Head
+  ctx.save();
+  ctx.translate(28, -8);
+  ctx.beginPath(); ctx.moveTo(-4, 4); ctx.lineTo(4, 4); ctx.lineTo(4, 12); ctx.lineTo(-4, 12);
+  ctx.fillStyle = '#223a70'; ctx.fill();
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(-4, -12, 22, 22, 6);
+  else ctx.rect(-4, -12, 22, 22);
+  ctx.fillStyle = '#2a4a8a'; ctx.fill();
+  ctx.strokeStyle = '#3a5aaa'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(10, -4, 10, 10, 3);
+  else ctx.rect(10, -4, 10, 10);
+  ctx.fillStyle = '#1e3a70'; ctx.fill();
+  ctx.beginPath(); ctx.arc(18, -1, 3, 0, Math.PI * 2);
+  ctx.fillStyle = '#111'; ctx.fill();
+  ctx.beginPath(); ctx.arc(4, -4, 3, 0, Math.PI * 2);
+  ctx.fillStyle = '#111'; ctx.fill();
+  ctx.beginPath(); ctx.arc(5, -5, 1, 0, Math.PI * 2);
+  ctx.fillStyle = 'white'; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(2, -12); ctx.lineTo(-2, -20); ctx.lineTo(8, -16); ctx.closePath();
+  ctx.fillStyle = '#1e3a70'; ctx.fill();
+  ctx.restore();
+
+  // Legs helper
+  function leg(x, yTop, extend, isBack) {
+    const bend = isBack ? -1 : 1;
+    const kx = x + bend * 6 + extend * 0.3;
+    const ky = yTop + 20;
+    const fx = x + extend * 0.7;
+    const fy = yTop + 38;
+    ctx.beginPath(); ctx.moveTo(x, yTop); ctx.lineTo(kx, ky);
+    ctx.strokeStyle = '#233d7a'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(fx, fy);
+    ctx.strokeStyle = '#233d7a'; ctx.lineWidth = 6; ctx.stroke();
+    ctx.beginPath(); ctx.arc(kx, ky, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#1a2e60'; ctx.fill();
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(fx - 6, fy - 2, 12, 6, 3);
+    else ctx.rect(fx - 6, fy - 2, 12, 6);
+    ctx.fillStyle = '#111'; ctx.fill();
+  }
+
+  const sitShift = sitAmt * 14;
+  leg(18, 10, frontLegExtend > 0 ? frontLegExtend : 0, false);
+
+  if (action === 'pee') {
+    leg(-22, 10, 0, true);
+    ctx.save(); ctx.translate(-22, 10); ctx.rotate(-0.8 + wave * 0.2);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(8, 20);
+    ctx.strokeStyle = '#233d7a'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(8, 20); ctx.lineTo(20, 28);
+    ctx.strokeStyle = '#233d7a'; ctx.lineWidth = 6; ctx.stroke();
+    ctx.restore();
+  } else {
+    leg(-22, 10 + sitShift, backLegExtend > 0 ? backLegExtend : 0, true);
+  }
+
+  // Tail
+  const tailAngle = Math.PI * 0.35 + tailWag;
+  ctx.save(); ctx.translate(-30, -2);
+  ctx.beginPath(); ctx.moveTo(0, 0);
+  const tx = Math.cos(tailAngle + Math.PI) * 20;
+  const ty = Math.sin(tailAngle + Math.PI) * 20;
+  ctx.bezierCurveTo(-8, -10, tx * 0.6 + ty * 0.3, ty * 0.6 - 4, tx, ty);
+  ctx.strokeStyle = '#2a4a8a'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.stroke();
+  ctx.restore();
+
+  // Action label
+  if (action !== 'idle' && action !== 'stand') {
+    const lbl = action.toUpperCase();
+    ctx.font = 'bold 10px monospace';
+    const tw = ctx.measureText(lbl).width;
+    ctx.fillStyle = 'rgba(30,20,40,0.85)';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(-tw / 2 - 8, -70, tw + 16, 20, 5);
+    else ctx.rect(-tw / 2 - 8, -70, tw + 16, 20);
+    ctx.fill();
+    ctx.fillStyle = '#ff6b35'; ctx.textAlign = 'center';
+    ctx.fillText(lbl, 0, -58);
+  }
+
+  ctx.restore();
+}
+
+// Init
+resetDog();
+loadCh(0);
+</script>
+</body>
+</html>
