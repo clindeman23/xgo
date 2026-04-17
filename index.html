@@ -239,7 +239,6 @@
   .fb-text span { color: var(--muted); font-weight: 600; }
 
   /* ─── VIRTUAL DOG ─── */
-  #vdog-canvas { border-radius: 16px; border: 2px solid var(--border); display: block; width: 100%; max-width: 520px; margin: 0 auto; box-shadow: var(--shadow-lg); }
   #vdog-status { text-align: center; font-family: 'Fira Code', monospace; font-size: 0.82rem; color: var(--accent2); margin: 10px 0 6px; min-height: 22px; font-weight: 500; }
   .vdog-code-wrap { border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); margin: 16px 0 0; }
   #vdog-editor { width: 100%; min-height: 220px; background: #1e1b18; color: #d6cfc8; font-family: 'Fira Code', monospace; font-size: 13px; line-height: 1.85; border: none; outline: none; padding: 20px; resize: vertical; box-sizing: border-box; tab-size: 4; }
@@ -628,17 +627,45 @@ input.on_button_pressed(
   <div class="section">
     <div class="section-tag">Step 04 — Virtual Dog</div>
     <h2>Test your code on a <em>virtual dog!</em></h2>
-    <p>Write a real XGO program in the box below and press <strong>Run My Code</strong>. The virtual dog will try to do what your code says — and if something's wrong, it'll tell you exactly what to fix!</p>
+    <p>Write a real XGO program in the box below and press <strong>Run My Code</strong>. The virtual dog will show you what your code does — and if something's wrong, it'll tell you exactly what to fix!</p>
 
-    <canvas id="vdog-canvas" width="500" height="280"></canvas>
-    <div id="vdog-status">Dog is ready and waiting for your code! 🐾</div>
+    <!-- Virtual dog display -->
+    <div id="vdog-display" style="
+      background: white;
+      border: 3px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 24px 24px;
+      text-align: center;
+      margin: 20px 0;
+      box-shadow: var(--shadow-lg);
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: background 0.4s, border-color 0.4s;
+    ">
+      <div id="vdog-emoji" style="font-size: 5rem; line-height: 1; transition: all 0.3s;">🐕</div>
+      <div id="vdog-action-name" style="
+        font-family: 'Fira Code', monospace;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #78716c;
+        background: #f5f0eb;
+        padding: 6px 18px;
+        border-radius: 20px;
+        border: 2px solid #e8ddd0;
+      ">Waiting for your code...</div>
+      <div id="vdog-status" style="font-size: 0.9rem; color: #78716c; font-weight: 600; min-height: 22px;"></div>
+    </div>
 
     <div class="vdog-code-wrap">
       <div class="editor-head">
         <div class="code-dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
         <div class="code-label">write your program — then hit Run!</div>
       </div>
-      <textarea id="vdog-editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="# Write a program for the virtual dog!&#10;# Try making it sit, wave, or dance when you press Button A.&#10;# Don't forget the setup lines at the bottom!"></textarea>
+      <textarea id="vdog-editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="# Write a program for the virtual dog!&#10;# Example: make it sit when Button A is pressed.&#10;# Don't forget the setup lines at the bottom!"></textarea>
     </div>
     <div class="vdog-actions">
       <button class="btn-run" onclick="runVdog()">▶ Run My Code</button>
@@ -648,7 +675,7 @@ input.on_button_pressed(
 
     <div class="callout blue" style="margin-top:20px;">
       <strong>💡 How this works</strong>
-      <p>Write a real XGO program. The simulator will read your code and if it's correct, it'll show the dog doing what you described. If something is wrong — like missing the setup lines or wrong spelling — it'll tell you what to fix. It's a safe way to practice before using the real dog!</p>
+      <p>Write a real XGO program with your def function, button connections, and setup lines at the bottom. Hit Run — the virtual dog will show what action your code triggers. If anything is wrong it'll tell you exactly what to fix before you try it on the real dog!</p>
     </div>
 
     <div class="page-nav">
@@ -943,7 +970,7 @@ function goTo(n) {
   cur = n;
   pages[n].classList.add('active'); tabs[n].classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
-  if (n===4) { setTimeout(()=>{ drawVdog(vstate); },60); }
+  if (n===4) { showVdog('GO_PRONE'); }
 }
 
 // ── TAB KEY IN TEXTAREAS ──
@@ -960,157 +987,111 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
-  drawVdog(vstate);
+  showVdog('GO_PRONE');
 });
 
-// ── VIRTUAL DOG ──
-const vstate = { action:'GO_PRONE', frame:0 };
-let vtimer=null;
-const dogInfo={
-  GO_PRONE:        {emoji:'🐕',label:'Lying flat — GO_PRONE',        bg:'#f5f0eb',color:'#78716c'},
-  DEFAULT_POSTURE: {emoji:'🐕',label:'Standing — DEFAULT_POSTURE',    bg:'#eff6ff',color:'#1d4ed8'},
-  SIT_DOWN:        {emoji:'🐕‍🦺',label:'Sitting — SIT_DOWN',         bg:'#f0fdf4',color:'#15803d'},
-  WAVE:            {emoji:'🐾',label:'Waving! — WAVE',                bg:'#fff7ed',color:'#c2410c'},
-  HANDSHAKE:         {emoji:'🤝',label:'Handshake — HANDSHAKE',             bg:'#fffbeb',color:'#b45309'},
-  WHIRL:             {emoji:'🌀',label:'Spinning — WHIRL',                   bg:'#fdf4ff',color:'#7e22ce'},
-  SUR_PLACE:         {emoji:'👣',label:'Marching — SUR_PLACE',               bg:'#f0fdf4',color:'#15803d'},
-  CRAWL_FORWARD:     {emoji:'🐕',label:'Crawling — CRAWL_FORWARD',           bg:'#fef9c3',color:'#854d0e'},
-  SQUAT:             {emoji:'🐕',label:'Crouching — SQUAT',                  bg:'#f0fdf4',color:'#15803d'},
-  STAND:             {emoji:'🐕',label:'Standing — STAND',                   bg:'#eff6ff',color:'#1d4ed8'},
-  STRETCH_ONESELF:   {emoji:'🙆',label:'Stretching — STRETCH_ONESELF',       bg:'#fdf4ff',color:'#7e22ce'},
-  REQUEST_FEEDING:   {emoji:'🥺',label:'Begging — REQUEST_FEEDING',          bg:'#fff7ed',color:'#c2410c'},
-  LOOKING_FOR_FOOD:  {emoji:'👃',label:'Sniffing — LOOKING_FOR_FOOD',        bg:'#fef9c3',color:'#854d0e'},
-  PLAY_PENDULUM:     {emoji:'🫧',label:'Swinging — PLAY_PENDULUM',           bg:'#eff6ff',color:'#1d4ed8'},
-  TWIRL_ROLL:        {emoji:'↩️',label:'Rolling — TWIRL_ROLL',              bg:'#fdf4ff',color:'#7e22ce'},
-  TWIRL_PITCH:       {emoji:'⬆️',label:'Pitching — TWIRL_PITCH',           bg:'#fdf4ff',color:'#7e22ce'},
-  TWIRL_YAW:         {emoji:'↔️',label:'Yawing — TWIRL_YAW',               bg:'#fdf4ff',color:'#7e22ce'},
-  TRIAXIAL_ROTATION: {emoji:'🔄',label:'Rotating — TRIAXIAL_ROTATION',       bg:'#fdf4ff',color:'#7e22ce'},
-  PEE:             {emoji:'💧',label:'You know... — PEE',             bg:'#fffbeb',color:'#b45309'},
-  FORWARD:         {emoji:'🐕',label:'Walking forward — FORWARD',     bg:'#eff6ff',color:'#1d4ed8'},
-  BACKWARD:        {emoji:'🐕',label:'Walking backward — BACKWARD',   bg:'#eff6ff',color:'#1d4ed8'},
-  LEFT:            {emoji:'🐕',label:'Stepping left — LEFT',          bg:'#eff6ff',color:'#1d4ed8'},
-  RIGHT:           {emoji:'🐕',label:'Stepping right — RIGHT',        bg:'#eff6ff',color:'#1d4ed8'},
+// ── VIRTUAL DOG (HTML display) ──
+let vtimer = null;
+const dogInfo = {
+  GO_PRONE:          {emoji:'🐕',   label:'GO_PRONE — lying flat',              bg:'#fff7ed',border:'#fed7aa',lc:'#c2410c'},
+  DEFAULT_POSTURE:   {emoji:'🐕',   label:'DEFAULT_POSTURE — standing ready',   bg:'#eff6ff',border:'#bfdbfe',lc:'#1d4ed8'},
+  STAND:             {emoji:'🐕',   label:'STAND — standing tall',              bg:'#eff6ff',border:'#bfdbfe',lc:'#1d4ed8'},
+  SIT_DOWN:          {emoji:'🐕\u200d🦺',label:'SIT_DOWN — sitting down',     bg:'#f0fdf4',border:'#86efac',lc:'#15803d'},
+  WAVE:              {emoji:'🐾',   label:'WAVE — waving a leg!',               bg:'#fff7ed',border:'#fed7aa',lc:'#c2410c'},
+  HANDSHAKE:         {emoji:'🤝',   label:'HANDSHAKE — offering a paw',         bg:'#fffbeb',border:'#fde68a',lc:'#b45309'},
+  PEE:               {emoji:'💧',   label:'PEE — you know 😂',                 bg:'#fffbeb',border:'#fde68a',lc:'#b45309'},
+  STRETCH_ONESELF:   {emoji:'🙆',   label:'STRETCH_ONESELF — stretching',       bg:'#fdf4ff',border:'#d8b4fe',lc:'#7e22ce'},
+  SUR_PLACE:         {emoji:'👣',   label:'SUR_PLACE — marching in place',      bg:'#f0fdf4',border:'#86efac',lc:'#15803d'},
+  CRAWL_FORWARD:     {emoji:'🐕',   label:'CRAWL_FORWARD — crawling low',       bg:'#fef9c3',border:'#fde047',lc:'#854d0e'},
+  WHIRL:             {emoji:'🌀',   label:'WHIRL — spinning in a circle!',      bg:'#fdf4ff',border:'#d8b4fe',lc:'#7e22ce'},
+  SQUAT:             {emoji:'🐕',   label:'SQUAT — crouching down',             bg:'#f0fdf4',border:'#86efac',lc:'#15803d'},
+  REQUEST_FEEDING:   {emoji:'🥺',   label:'REQUEST_FEEDING — begging!',         bg:'#fff7ed',border:'#fed7aa',lc:'#c2410c'},
+  LOOKING_FOR_FOOD:  {emoji:'👃',   label:'LOOKING_FOR_FOOD — sniffing',        bg:'#fef9c3',border:'#fde047',lc:'#854d0e'},
+  PLAY_PENDULUM:     {emoji:'🫧',   label:'PLAY_PENDULUM — swinging',           bg:'#eff6ff',border:'#bfdbfe',lc:'#1d4ed8'},
+  TWIRL_ROLL:        {emoji:'↩️',  label:'TWIRL_ROLL — rolling side to side',  bg:'#fdf4ff',border:'#d8b4fe',lc:'#7e22ce'},
+  TWIRL_PITCH:       {emoji:'⬆️',  label:'TWIRL_PITCH — tilting fwd/back',    bg:'#fdf4ff',border:'#d8b4fe',lc:'#7e22ce'},
+  TWIRL_YAW:         {emoji:'↔️',  label:'TWIRL_YAW — twisting left/right',   bg:'#fdf4ff',border:'#d8b4fe',lc:'#7e22ce'},
+  TRIAXIAL_ROTATION: {emoji:'🔄',   label:'TRIAXIAL_ROTATION — full rotation',  bg:'#fdf4ff',border:'#d8b4fe',lc:'#7e22ce'},
+  FORWARD:           {emoji:'🐕 →', label:'FORWARD — walking forward',          bg:'#eff6ff',border:'#bfdbfe',lc:'#1d4ed8'},
+  BACKWARD:          {emoji:'← 🐕',label:'BACKWARD — walking backward',         bg:'#eff6ff',border:'#bfdbfe',lc:'#1d4ed8'},
+  LEFT:              {emoji:'🐕 ↙',label:'LEFT — stepping sideways left',       bg:'#eff6ff',border:'#bfdbfe',lc:'#1d4ed8'},
+  RIGHT:             {emoji:'🐕 ↗',label:'RIGHT — stepping sideways right',     bg:'#eff6ff',border:'#bfdbfe',lc:'#1d4ed8'},
 };
 
-function drawVdog(state) {
-  const canvas=document.getElementById('vdog-canvas');
-  if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  const W=canvas.width, H=canvas.height;
-  const info=dogInfo[state.action]||dogInfo['GO_PRONE'];
+const animActions = ['WHIRL','WAVE','SUR_PLACE','FORWARD','BACKWARD','TRIAXIAL_ROTATION','TWIRL_ROLL','TWIRL_PITCH','TWIRL_YAW'];
 
-  // Background
-  ctx.fillStyle=info.bg; ctx.fillRect(0,0,W,H);
+function showVdog(action) {
+  const info = dogInfo[action] || dogInfo['GO_PRONE'];
+  const display = document.getElementById('vdog-display');
+  const emojiEl = document.getElementById('vdog-emoji');
+  const nameEl  = document.getElementById('vdog-action-name');
+  if (!display) return;
 
-  // Dots pattern
-  ctx.fillStyle='rgba(0,0,0,0.04)';
-  for(let x=30;x<W;x+=36) for(let y=24;y<H-30;y+=36){ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();}
+  display.style.background  = info.bg;
+  display.style.borderColor = info.border;
+  nameEl.style.background   = info.bg;
+  nameEl.style.borderColor  = info.border;
+  nameEl.style.color        = info.lc;
+  nameEl.textContent        = info.label;
+  emojiEl.textContent       = info.emoji;
+  emojiEl.style.transform   = '';
 
-  // Ground
-  ctx.strokeStyle='rgba(0,0,0,0.08)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(30,H-40);ctx.lineTo(W-30,H-40);ctx.stroke();
+  if (vtimer) { clearInterval(vtimer); vtimer = null; }
 
-  // Animated bob
-  const anim=['WHIRL','WAVE','FORWARD','BACKWARD','LEFT','RIGHT'];
-  const bob=anim.includes(state.action)?Math.sin(state.frame*0.25)*10:0;
-
-  // Direction arrow
-  if(['FORWARD','BACKWARD','LEFT','RIGHT'].includes(state.action)){
-    const arr={FORWARD:'→→',BACKWARD:'←←',LEFT:'↙↙',RIGHT:'↗↗'};
-    ctx.font='bold 22px Nunito,sans-serif';
-    ctx.fillStyle=info.color;
-    ctx.textAlign='center';
-    ctx.fillText(arr[state.action]||'', W/2+60, H/2-10+bob);
-  }
-
-  // Dog
-  ctx.font='80px serif';
-  ctx.textAlign='center';
-  ctx.textBaseline='middle';
-  ctx.fillText(info.emoji, W/2, H/2-16+bob);
-
-  // Label pill
-  ctx.fillStyle=info.color;
-  ctx.font='bold 13px "Nunito",sans-serif';
-  ctx.textBaseline='alphabetic';
-  ctx.fillText(info.label, W/2, H-14);
-}
-
-function animateVdog(){
-  if(vtimer)clearInterval(vtimer);
-  const anim=['WHIRL','WAVE','FORWARD','BACKWARD','LEFT','RIGHT'];
-  if(anim.includes(vstate.action)){
-    vtimer=setInterval(()=>{vstate.frame++;drawVdog(vstate);},80);
-    setTimeout(()=>{clearInterval(vtimer);vtimer=null;vstate.frame=0;drawVdog(vstate);},2500);
+  if (animActions.includes(action)) {
+    let tick = 0;
+    vtimer = setInterval(() => {
+      tick++;
+      emojiEl.style.transform = `translateY(${Math.sin(tick * 0.4) * 12}px)`;
+    }, 80);
+    setTimeout(() => {
+      if (vtimer) { clearInterval(vtimer); vtimer = null; }
+      emojiEl.style.transform = '';
+    }, 2500);
   }
 }
 
 // Parse code and run on virtual dog
 function runVdog(){
-  const code=document.getElementById('vdog-editor').value;
-  const fb=document.getElementById('vdog-feedback');
-  const status=document.getElementById('vdog-status');
-  fb.style.display='block';
+  const code = document.getElementById('vdog-editor').value;
+  const fb   = document.getElementById('vdog-feedback');
+  const statusEl = document.getElementById('vdog-status');
+  fb.style.display = 'block';
 
-  // Check basics
-  if(!code.trim()){
-    fb.className='vdog-feedback vf-bad';
-    fb.innerHTML='❌ There\'s no code here yet! Write a program first.';
-    return;
-  }
-  if(!code.includes('init_xgo_serial')){
-    fb.className='vdog-feedback vf-bad';
-    fb.innerHTML='❌ Missing setup line! Add <code style="font-family:\'Fira Code\',monospace;">xgo.init_xgo_serial(SerialPin.P2, SerialPin.P1)</code> at the very bottom of your program.';
-    return;
-  }
-  if(!code.includes('SerialPin.P2')||!code.includes('SerialPin.P1')){
-    fb.className='vdog-feedback vf-bad';
-    fb.innerHTML='❌ Wrong pins! Make sure your init line says <code style="font-family:\'Fira Code\',monospace;">SerialPin.P2, SerialPin.P1</code> (P2 first, then P1).';
-    return;
-  }
-  if(!code.includes('GO_PRONE')){
-    fb.className='vdog-feedback vf-bad';
-    fb.innerHTML='❌ Missing GO_PRONE! Add <code style="font-family:\'Fira Code\',monospace;">xgo.execution_action(xgo.action_enum.GO_PRONE)</code> at the bottom after the init line.';
-    return;
-  }
-  if(!code.includes('def ')){
-    fb.className='vdog-feedback vf-bad';
-    fb.innerHTML='❌ No function defined! Use <code style="font-family:\'Fira Code\',monospace;">def</code> to create a function with your dog actions inside.';
-    return;
-  }
-  if(!code.includes('on_button_pressed')){
-    fb.className='vdog-feedback vf-bad';
-    fb.innerHTML='❌ No button connected! Use <code style="font-family:\'Fira Code\',monospace;">input.on_button_pressed(Button.A, your_function)</code> to connect a button to your function.';
-    return;
+  const err = (msg) => { fb.className='vdog-feedback vf-bad'; fb.innerHTML=msg; };
+
+  if (!code.trim())                          return err('❌ No code yet! Write a program first.');
+  if (!code.includes('init_xgo_serial'))     return err('❌ Missing setup line! Add <code style="font-family:Fira Code,monospace">xgo.init_xgo_serial(SerialPin.P2, SerialPin.P1)</code> at the very bottom.');
+  if (!code.includes('SerialPin.P2'))        return err('❌ Wrong pins! Your init line needs <code style="font-family:Fira Code,monospace">SerialPin.P2, SerialPin.P1</code> (P2 first, P1 second).');
+  if (!code.includes('GO_PRONE'))            return err('❌ Missing GO_PRONE! Add <code style="font-family:Fira Code,monospace">xgo.execution_action(xgo.action_enum.GO_PRONE)</code> at the bottom.');
+  if (!code.includes('def '))                return err('❌ No function! Use <code style="font-family:Fira Code,monospace">def</code> to create a function with your dog actions inside it.');
+  if (!code.includes('on_button_pressed'))   return err('❌ No button connected! Add <code style="font-family:Fira Code,monospace">input.on_button_pressed(Button.A, your_function)</code> after your def block.');
+
+  const allActions = ['DEFAULT_POSTURE','SIT_DOWN','WAVE','HANDSHAKE','WHIRL','SUR_PLACE','CRAWL_FORWARD',
+    'SQUAT','STAND','STRETCH_ONESELF','REQUEST_FEEDING','LOOKING_FOR_FOOD','PLAY_PENDULUM',
+    'TWIRL_ROLL','TWIRL_PITCH','TWIRL_YAW','TRIAXIAL_ROTATION','PEE','FORWARD','BACKWARD','LEFT','RIGHT'];
+
+  let detected = null;
+  for (const a of allActions) {
+    if (code.includes(a)) { detected = a; break; }
   }
 
-  // Detect what action the program would do
-  const actions=['DEFAULT_POSTURE','SIT_DOWN','WAVE','HANDSHAKE','WHIRL','SUR_PLACE','CRAWL_FORWARD','SQUAT','STAND','STRETCH_ONESELF','REQUEST_FEEDING','LOOKING_FOR_FOOD','PLAY_PENDULUM','TWIRL_ROLL','TWIRL_PITCH','TWIRL_YAW','TRIAXIAL_ROTATION','PEE','FORWARD','BACKWARD','LEFT','RIGHT'];
-  let detected=null;
-  for(const a of actions){
-    if(code.includes(a) && a!=='GO_PRONE'){detected=a;break;}
-  }
-
-  if(detected){
-    vstate.action=detected;
-    vstate.frame=0;
-    drawVdog(vstate);
-    animateVdog();
-    status.textContent=(dogInfo[detected]?.label||detected)+' 🎉';
-    fb.className='vdog-feedback vf-good';
-    fb.innerHTML='✅ Your code looks correct! The virtual dog is showing what it would do. When you\'re ready, download this to the real micro:bit and test it on the actual dog!';
+  if (detected) {
+    showVdog(detected);
+    if (statusEl) statusEl.textContent = '✅ ' + (dogInfo[detected]?.label || detected) + ' 🎉';
+    fb.className = 'vdog-feedback vf-good';
+    fb.innerHTML = '✅ Your code looks correct! The virtual dog is showing what it would do. Ready to try it on the real dog!';
   } else {
-    fb.className='vdog-feedback vf-bad';
-    fb.innerHTML='❌ No dog action found in your function! Make sure you have something like <code style="font-family:\'Fira Code\',monospace;">xgo.execution_action(xgo.action_enum.SIT_DOWN)</code> inside your def function.';
+    err('❌ No dog action found! Make sure you have something like <code style="font-family:Fira Code,monospace">xgo.execution_action(xgo.action_enum.SIT_DOWN)</code> inside your def function.');
   }
 }
 
 function clearVdog(){
-  document.getElementById('vdog-editor').value='';
-  document.getElementById('vdog-feedback').style.display='none';
-  document.getElementById('vdog-status').textContent='Dog is ready and waiting for your code! 🐾';
-  vstate.action='GO_PRONE'; vstate.frame=0;
-  drawVdog(vstate);
+  document.getElementById('vdog-editor').value = '';
+  document.getElementById('vdog-feedback').style.display = 'none';
+  const s = document.getElementById('vdog-status');
+  if (s) s.textContent = '';
+  showVdog('GO_PRONE');
 }
 
 // ── TRY IT ──
